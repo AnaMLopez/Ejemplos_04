@@ -13,25 +13,25 @@ VERDE_BANDERA = (0, 122, 0)
 ROJO = (255, 0, 0)
 NEGRO = (0, 0, 0)
 
-def rebotar():
-    '''
-    Mueve la pelota dentro de los límites de la pantalla
-    '''
 
-    # Pelota
+def rebotar():
+    # pelota
     radio = 20
     x = ANCHO//2
     y = ALTO//2
-    DX = 10
-    DY = 6
+    DX = 5
+    DY = 3
     derecha = True
     abajo = True
 
     # Raqueta
     alturaRaqueta = ALTO//5
     anchoRaqueta = alturaRaqueta//4
-    xRaqueta = 0    # No se mueve en x
+    xRaqueta = 0
     yRaqueta = ALTO//2
+
+    dyRaqueta = 20
+    moverRaqueta = False
 
     # Ejemplo del uso de pygame
     pygame.init()   # Inicializa pygame
@@ -44,18 +44,31 @@ def rebotar():
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:  # El usuario hizo click en el botón de salir
                 termina = True
+            # Pregunta si se oprimió alguna tecla
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_DOWN: # flecha abajo
+                    dyRaqueta = +20
+                    moverRaqueta = True
+                if evento.key == pygame.K_UP:   # flecha arriba
+                    dyRaqueta = -20
+                    moverRaqueta = True
+            if evento.type == pygame.KEYUP:     # se suelta la tecla
+                moverRaqueta = False
 
         # Borrar pantalla
         ventana.fill(VERDE_BANDERA)
 
-        # Dibujar. Aquí haces todos los trazos que requieras
-        # Dibujar pelota
+        # Dibujar, aquí haces todos los trazos que requieras
+        # Pelota
         pygame.draw.circle(ventana, ROJO, (x, y), radio)
-
-        # Dibujar raqueta
+        # Raqueta
         pygame.draw.rect(ventana,ROJO,(xRaqueta,yRaqueta,anchoRaqueta,alturaRaqueta))
 
-        # Prueba si la pelota llega a los límites
+        # Actuliza la posición de la raqueta
+        if moverRaqueta:
+            yRaqueta += dyRaqueta
+
+        # Actualiza la posición de la pelota
         if derecha:
             x += DX      # x = x + 3
         else:
@@ -66,16 +79,27 @@ def rebotar():
         else:
             y -= DY
 
-        # ***** Falta probar colisión entre raqueta y pelota *****
-
-        if x>=ANCHO-radio: # or x<=radio:   # 'abrimos' la pared izquierda :)
+        # Prueba límites de la pelota
+        if x>=ANCHO-radio: # or x<=radio:
             derecha = not derecha
 
         if y>=ALTO-radio or y<=radio:
             abajo = not abajo
 
+        # prueba colision pelota-raqueta
+        xc = x
+        yc = y
+        xr = xRaqueta
+        yr = yRaqueta
+        if xc>=xr and xc<=xr+anchoRaqueta:
+            # colisiona horizontal
+            if yc>=yr and yc<=yr+alturaRaqueta:
+                # colisiona vertical
+                derecha = True
+
+
         pygame.display.flip()   # Actualiza trazos
-        reloj.tick(60)          # 60 fps
+        reloj.tick(40)          # 40 fps
 
     pygame.quit()   # termina pygame
 
